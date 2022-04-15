@@ -17,15 +17,15 @@
     <div class="row mt-2">
         <div class="col text-center" id="divButtons">
             <button id='btnNew' class="btn btn-danger">New game</button>
-            <button id='btnRequest' class="btn btn-primary">Request card</button>
-            <button id='btnStop' class="btn btn-primary">Stop game</button>
+            <button id='btnRequest' disabled="disabled" class="btn btn-primary">Request card</button>
+            <button id='btnStop' disabled="disabled" class="btn btn-primary">Stop game</button>
         </div>
     </div>
 
     <div class="row container">
         <div class="col">
             <h1>Player 1 - <small>0</small></h1>
-            <div id="player-cards">
+            <div id="player-cards" class="divCards">
                 <!-- <img src="assets/cards/10C.png" class="card-blackJack"> -->
             </div>
         </div>
@@ -34,7 +34,7 @@
     <div class="row container mt-4">
         <div class="col">
             <h1>Bot - <small>0</small></h1>
-            <div id="computer-cards">
+            <div id="computer-cards" class="divCards">
                 <!-- <img src="assets/cards/10C.png" class="card-blackJack"> -->
             </div>
         </div>
@@ -43,6 +43,13 @@
 
     <script src="assets/js/underscore-min.js"></script>
     <script src="assets/js/game.js"></script>
+    <script >
+
+        document.querySelector('#btnNew', () => {
+            myModule.newGame()
+        })
+
+    </script>
 
 </body>
 </html>
