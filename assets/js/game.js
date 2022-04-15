@@ -7,32 +7,41 @@
 
 */
 
-(() => {
+const myModule = (() => {
     'use strict'
 
-
     let deck = [];
-    const typesDeck = ['C', 'D', 'H', 'S']
-    const specialDecks = ['A', 'J', 'Q', 'K']
 
-    let scorePlayer = 0, 
-        scoreComputer = 0
+    const typesDeck = ['C', 'D', 'H', 'S'], 
+          specialDecks = ['A', 'J', 'Q', 'K'];
 
-    // References
+    let playerPoints = [];
 
-    const btnRequest = document.querySelector('#btnRequest')
-    const btnStop = document.querySelector('#btnStop')
-    const btnNew = document.querySelector('#btnNew')
+    // References HTML
 
-    const pointsHTML = document.querySelectorAll('small')
+    const btnRequest = document.querySelector('#btnRequest'),
+          btnStop = document.querySelector('#btnStop'),
+          btnNew = document.querySelector('#btnNew');
+      
+    const divCardsPlayers = document.querySelectorAll('.divCards'),
+          pointsHTML = document.querySelectorAll('small');
 
-    const divCardsPlayer = document.querySelector('#player-cards')
-    const divCardsComputer = document.querySelector('#computer-cards')
-
+    // This function start game
+    const initGame = (numPlayers = 2) => {
+        deck = createDeck();
+        playerPoints = []
+        for(let i = 0; i < numPlayers; i++){
+            playerPoints.push(0);
+        }
+        pointsHTML.forEach(elem => elem.innerText = 0)
+        divCardsPlayers.forEach(elem => elem.innerHTML = '')
+        btnRequest.disabled = false
+        btnStop.disabled = false
+    }
 
     // This function created new deck random
     const createDeck = () => {
-        deck = []
+        deck = [];
         for(let i = 2; i <= 10; i++){
             for (let typeCard of typesDeck) {
                 deck.push(i + typeCard)
@@ -43,56 +52,38 @@
                     deck.push(specialDesk + typeCard)
                 }
             }
-        // console.log(deck)
-        deck = _.shuffle(deck)
-        return deck;
+        return _.shuffle(deck);
     }
-
-    createDeck()
 
     // Selecte one card
     const requestCard = () => {
-        if(deck.length === 0) {
-            throw 'There are no cards in deck'
-        }
-        const card = deck.pop()
-        return card
+        if(deck.length === 0) throw 'There are no cards in deck'
+        return deck.pop()
     }
 
-    // const valueCard = (card) => {
-    //     const value = card.substring(0, card.length - 1)
-    //     let point = 0;
-    //     if(isNaN(value)){
-    //         point = (value === 'A') ? 11 : 10
-    //     } else {
-    //         point = Number(value);
-    //     }
-    // }
     const valueCard = (card) => {
-        const value = card.substring(0, card.length - 1)
+        const value = card.substring(0, card.length - 1);
         return (isNaN(value)) ? 
             (value === 'A') ? 11 : 10
             : Number(value)
     }
 
-    // Turn computer
-    const turnComputer = (minimunPoinst) => {
-        do {
-            const card = requestCard()
-            scoreComputer = scoreComputer + valueCard(card)
-            pointsHTML[1].innerText = scoreComputer
-        
-            //Inset card
-            const imgCard = document.createElement('img')
-            imgCard.src = `assets/cards/${card}.png`
-            imgCard.classList.add('card-blackJack')
-            divCardsComputer.append(imgCard)
+    const collectPlayerPoints = (card, playerTurn) => {
+        playerPoints[playerTurn] = playerPoints[playerTurn] + valueCard(card)
+        pointsHTML[playerTurn].innerText = playerPoints[playerTurn]
+        return playerPoints[playerTurn]
+    }
 
-            if(scorePlayer > 21) break
+    const createCard = (card, playerTurn) => {
+        const imgCard = document.createElement('img');
+        imgCard.src = `assets/cards/${card}.png`;
+        imgCard.classList.add('card-blackJack');
+        divCardsPlayers[playerTurn].append(imgCard);
+    }
 
-            
-        } while ((scoreComputer <  minimunPoinst) && (minimunPoinst <= 21));
+    const validateWinner = () => {
 
+        const [minimunPoinst, scoreComputer] = playerPoints
 
         setTimeout(() => {
             if(scoreComputer === minimunPoinst){
@@ -105,8 +96,17 @@
                 alert('Computadora gana');
             }
         }, 10);
+    }
 
-
+    // Turn computer
+    const turnComputer = (minimunPoinst) => {
+        let scoreComputer = 0
+        do {
+            const card = requestCard()
+            scoreComputer = collectPlayerPoints(card, playerPoints.length - 1);
+            createCard(card, playerPoints.length - 1)
+        } while ((scoreComputer <  minimunPoinst) && (minimunPoinst <= 21));
+        validateWinner()
     }
 
 
@@ -115,15 +115,8 @@
     // Function for create card
     btnRequest.addEventListener('click', () => {
         const card = requestCard()
-        scorePlayer = scorePlayer + valueCard(card)
-        pointsHTML[0].innerText = scorePlayer
-
-        //Inset card
-        const imgCard = document.createElement('img')
-        imgCard.src = `assets/cards/${card}.png`
-        imgCard.classList.add('card-blackJack')
-        divCardsPlayer.append(imgCard)
-
+        const scorePlayer = collectPlayerPoints(card, 0);
+        createCard(card, 0)
         if(scorePlayer > 21) {
             btnRequest.disabled = true
             btnStop.disabled = true
@@ -138,22 +131,15 @@
     btnStop.addEventListener('click', () => {
         btnRequest.disabled = true
         btnStop.disabled = true
-        turnComputer(scorePlayer)
+        turnComputer(playerPoints[0])
     })
 
     btnNew.addEventListener('click', () => {
-        deck = createDeck()
-        scorePlayer = 0
-        scoreComputer = 0
-        pointsHTML[0].innerText = 0
-        pointsHTML[1].innerText = 0
+        initGame()
+    });
 
-        divCardsPlayer.innerHTML = ''
-        divCardsComputer.innerHTML = ''
-
-        btnRequest.disabled = false
-        btnStop.disabled = false
-    })
-
+    return {
+        newGame: initGame,
+    }
 
 })()
